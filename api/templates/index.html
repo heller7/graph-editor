@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f0f4f8;
+            color: #2d3748;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: #4a5568;
+        }
+
+        .canvas-section {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .canvas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .canvas-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .canvas-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .control-btn {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .control-btn:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+            transform: translateY(-1px);
+        }
+
+        .control-btn i {
+            font-size: 14px;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .export-btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .export-btn:hover {
+            background: #3182ce;
+            transform: translateY(-1px);
+        }
+
+        .canvas-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #fafbfc;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px dashed #e2e8f0;
+        }
+
+        #canvas {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: crosshair;
+            background: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .instructions {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .instructions h3 {
+            color: #1a202c;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .instructions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        .instruction-item {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 16px;
+            border-left: 4px solid #4299e1;
+        }
+
+        .instruction-item h4 {
+            color: #2d3748;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .instruction-item p {
+            color: #4a5568;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .status {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .status.show {
+            transform: translateX(0);
+        }
+
+        .status.success {
+            background: #48bb78;
+        }
+
+        .status.error {
+            background: #f56565;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 24px;
+            border-radius: 12px;
+            width: 500px;
+            max-width: 90vw;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            color: #1a202c;
+            font-weight: 600;
+        }
+
+        .close {
+            color: #a0aec0;
+            font-size: 24px;
+            font-weight: 300;
+            cursor: pointer;
+            transition: color 0.2s ease;
+            line-height: 1;
+        }
+
+        .close:hover {
+            color: #4a5568;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #4a5568;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: white;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+        }
+
+        .btn {
+            background: #4299e1;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background: #3182ce;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #a0aec0;
+        }
+
+        .btn-secondary:hover {
+            background: #718096;
+        }
+
+        .btn-danger {
+            background: #f56565;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .modal-actions .btn {
+            flex: 1;
+        }
+
+        .graph-details {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-section h4 {
+            color: #2d3748;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .detail-list {
+            background: #f7fafc;
+            border-radius: 6px;
+            padding: 12px;
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #edf2f7;
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #2d3748;
+        }
+
+        .detail-value {
+            color: #4a5568;
+            font-size: 14px;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 16px;
+            }
+
+            .canvas-header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+            }
+
+            .canvas-controls {
+                justify-content: center;
+            }
+
+            .export-buttons {
+                justify-content: center;
+            }
+
+            .instructions-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Graph Editor</h1>
+            <p>Create and visualize graphs with an intuitive interface</p>
+        </div>
+
+        <div class="canvas-section">
+            <div class="canvas-header">
+                <div class="canvas-title">Graph Canvas</div>
+                <div class="canvas-controls">
+                    <div class="export-buttons">
+                        <button class="export-btn" onclick="exportGraph('png')">
+                            <i class="fas fa-download"></i> PNG
+                        </button>
+                        <button class="export-btn" onclick="exportGraph('jpg')">
+                            <i class="fas fa-download"></i> JPG
+                        </button>
+                        <button class="export-btn" onclick="exportGraph('tikz')">
+                            <i class="fas fa-code"></i> TikZ
+                        </button>
+                    </div>
+                    <button class="control-btn" onclick="openSettingsModal()">
+                        <i class="fas fa-cog"></i>
+                        Settings
+                    </button>
+                    <button class="control-btn" onclick="openGraphDetailsModal()">
+                        <i class="fas fa-pencil-alt"></i>
+                        Details
+                    </button>
+                </div>
+            </div>
+
+            <div class="canvas-container">
+                <canvas id="canvas" width="800" height="600"></canvas>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3>
+                <i class="fas fa-info-circle"></i>
+                How to Use
+            </h3>
+            <div class="instructions-grid">
+                <div class="instruction-item">
+                    <h4>Add Nodes</h4>
+                    <p>Click anywhere on the empty canvas to add a new node at that location.</p>
+                </div>
+                <div class="instruction-item">
+                    <h4>Edit Nodes</h4>
+                    <p>Click on any existing node to open the edit dialog and change its label.</p>
+                </div>
+                <div class="instruction-item">
+                    <h4>Create Edges</h4>
+                    <p>Click and drag from one node to another to create a directed edge between them.</p>
+                </div>
+                <div class="instruction-item">
+                    <h4>Delete Elements</h4>
+                    <p>Right-click on a node to delete it, or use the Details panel to manage all elements.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Node Edit Modal -->
+    <div id="nodeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Edit Node</span>
+                <span class="close" onclick="closeNodeModal()">&times;</span>
+            </div>
+            <div class="form-group">
+                <label for="editNodeLabel">Node Label:</label>
+                <input type="text" id="editNodeLabel" placeholder="Enter node label">
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="saveNodeEdit()">Save</button>
+                <button class="btn btn-secondary" onclick="closeNodeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edge Edit Modal -->
+    <div id="edgeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Edit Edge</span>
+                <span class="close" onclick="closeEdgeModal()">&times;</span>
+            </div>
+            <div class="form-group">
+                <label for="editEdgeLabel">Edge Label (optional):</label>
+                <input type="text" id="editEdgeLabel" placeholder="Enter edge label">
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="saveEdgeEdit()">Save</button>
+                <button class="btn btn-secondary" onclick="closeEdgeModal()">Cancel</button>
+                <button class="btn btn-danger" onclick="deleteEdge()">Delete Edge</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Graph Settings</span>
+                <span class="close" onclick="closeSettingsModal()">&times;</span>
+            </div>
+            <div class="settings-grid">
+                <div class="form-group">
+                    <label for="graphName">Graph Name:</label>
+                    <input type="text" id="graphName" placeholder="Enter graph name" value="my-graph">
+                </div>
+                <div class="form-group">
+                    <label for="nodeSize">Node Size:</label>
+                    <select id="nodeSize">
+                        <option value="small">Small</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="large">Large</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="saveGraph()">Save Graph</button>
+                <button class="btn btn-secondary" onclick="loadGraph()">Load Graph</button>
+                <button class="btn btn-danger" onclick="clearCanvas()">Clear Canvas</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Graph Details Modal -->
+    <div id="graphDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">Graph Details</span>
+                <span class="close" onclick="closeGraphDetailsModal()">&times;</span>
+            </div>
+            <div class="graph-details" id="graphDetailsContent">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <script>
+        class GraphEditor {
+            constructor() {
+                this.canvas = document.getElementById('canvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.nodes = [];
+                this.edges = [];
+                this.nodeIdCounter = 1;
+                this.edgeIdCounter = 1;
+                
+                // Interaction state
+                this.isDragging = false;
+                this.dragStartNode = null;
+                this.dragStartPos = { x: 0, y: 0 };
+                this.tempEdge = null;
+                this.selectedNode = null;
+                this.selectedEdge = null;
+                this.dragTimeout = null;
+                
+                this.setupEventListeners();
+                this.draw();
+            }
+
+            setupEventListeners() {
+                this.canvas.addEventListener('mousedown', (e) => this.handleMouseDown(e));
+                this.canvas.addEventListener('mousemove', (e) => this.handleMouseMove(e));
+                this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
+                this.canvas.addEventListener('contextmenu', (e) => this.handleRightClick(e));
+                this.canvas.addEventListener('mouseleave', (e) => this.handleMouseLeave(e));
+                
+                // Prevent context menu on canvas
+                this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+            }
+
+            getMousePos(e) {
+                const rect = this.canvas.getBoundingClientRect();
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+
+            handleMouseDown(e) {
+                const pos = this.getMousePos(e);
+                const node = this.getNodeAt(pos.x, pos.y);
+                
+                if (node) {
+                    this.dragStartNode = node;
+                    this.dragStartPos = pos;
+                    this.isDragging = false; // Start as false, will be set to true if we actually drag
+                    this.tempEdge = {
+                        source: node,
+                        target: pos
+                    };
+                    
+                    // Set a small timeout to distinguish between click and drag
+                    this.dragTimeout = setTimeout(() => {
+                        if (this.dragStartNode) {
+                            this.isDragging = true;
+                        }
+                    }, 150); // 150ms delay before considering it a drag
+                }
+            }
+
+            handleMouseMove(e) {
+                const pos = this.getMousePos(e);
+                
+                if (this.dragStartNode && !this.isDragging) {
+                    // Check if we've moved enough to consider it a drag
+                    const distance = Math.sqrt(
+                        (pos.x - this.dragStartPos.x) ** 2 + 
+                        (pos.y - this.dragStartPos.y) ** 2
+                    );
+                    
+                    if (distance > 5) { // 5 pixel threshold
+                        // Clear the timeout and start dragging
+                        if (this.dragTimeout) {
+                            clearTimeout(this.dragTimeout);
+                            this.dragTimeout = null;
+                        }
+                        this.isDragging = true;
+                    }
+                }
+                
+                if (this.isDragging && this.dragStartNode) {
+                    this.tempEdge.target = pos;
+                    this.draw();
+                } else {
+                    // Check for node or edge hover
+                    const node = this.getNodeAt(pos.x, pos.y);
+                    const edge = this.getEdgeAt(pos.x, pos.y);
+                    
+                    if (node || edge) {
+                        this.canvas.style.cursor = 'pointer';
+                    } else {
+                        this.canvas.style.cursor = 'crosshair';
+                    }
+                }
+            }
+
+            handleMouseUp(e) {
+                const pos = this.getMousePos(e);
+                
+                // Clear the drag timeout if it exists
+                if (this.dragTimeout) {
+                    clearTimeout(this.dragTimeout);
+                    this.dragTimeout = null;
+                }
+                
+                if (this.isDragging && this.dragStartNode) {
+                    const targetNode = this.getNodeAt(pos.x, pos.y);
+                    
+                    if (targetNode && targetNode !== this.dragStartNode) {
+                        // Create edge
+                        this.addEdge(this.dragStartNode.id, targetNode.id);
+                    }
+                    
+                    this.isDragging = false;
+                    this.dragStartNode = null;
+                    this.tempEdge = null;
+                    this.draw();
+                } else if (this.dragStartNode && !this.isDragging) {
+                    // This was a click, not a drag
+                    const node = this.dragStartNode;
+                    this.dragStartNode = null;
+                    this.tempEdge = null;
+                    
+                    this.openNodeEditModal(node);
+                } else if (!this.dragStartNode) {
+                    // Click on empty space or edge
+                    const node = this.getNodeAt(pos.x, pos.y);
+                    
+                    if (node) {
+                        this.openNodeEditModal(node);
+                    } else {
+                        // Check if clicking on an edge
+                        const edge = this.getEdgeAt(pos.x, pos.y);
+                        
+                        if (edge) {
+                            this.openEdgeEditModal(edge);
+                        } else {
+                            // Add new node
+                            this.addNode('', pos.x, pos.y);
+                        }
+                    }
+                }
+            }
+
+            handleRightClick(e) {
+                e.preventDefault();
+                const pos = this.getMousePos(e);
+                const node = this.getNodeAt(pos.x, pos.y);
+                
+                if (node) {
+                    if (confirm(`Delete node "${node.label}"?`)) {
+                        this.removeNode(node.id);
+                    }
+                }
+            }
+
+            getNodeAt(x, y) {
+                for (let i = this.nodes.length - 1; i >= 0; i--) {
+                    const node = this.nodes[i];
+                    const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
+                    if (distance <= 25) {
+                        return node;
+                    }
+                }
+                return null;
+            }
+
+            getEdgeAt(x, y) {
+                for (let i = this.edges.length - 1; i >= 0; i--) {
+                    const edge = this.edges[i];
+                    const source = this.nodes.find(n => n.id === edge.source);
+                    const target = this.nodes.find(n => n.id === edge.target);
+                    
+                    if (source && target) {
+                        if (this.isPointNearLine(x, y, source.x, source.y, target.x, target.y)) {
+                            return edge;
+                        }
+                    }
+                }
+                return null;
+            }
+
+            isPointNearLine(px, py, x1, y1, x2, y2, tolerance = 5) {
+                const A = px - x1;
+                const B = py - y1;
+                const C = x2 - x1;
+                const D = y2 - y1;
+
+                const dot = A * C + B * D;
+                const lenSq = C * C + D * D;
+                let param = -1;
+
+                if (lenSq !== 0) param = dot / lenSq;
+
+                let xx, yy;
+
+                if (param < 0) {
+                    xx = x1;
+                    yy = y1;
+                } else if (param > 1) {
+                    xx = x2;
+                    yy = y2;
+                } else {
+                    xx = x1 + param * C;
+                    yy = y1 + param * D;
+                }
+
+                const dx = px - xx;
+                const dy = py - yy;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                return distance <= tolerance;
+            }
+
+            addNode(label, x, y) {
+                const nodeId = this.nodeIdCounter++;
+                const node = {
+                    id: nodeId,
+                    label: label || `Node ${nodeId}`,
+                    x: x || Math.random() * 600 + 100,
+                    y: y || Math.random() * 400 + 100
+                };
+                this.nodes.push(node);
+                this.draw();
+                return node;
+            }
+
+            addEdge(sourceId, targetId) {
+                if (sourceId === targetId) {
+                    this.showStatus('Cannot connect node to itself', 'error');
+                    return;
+                }
+
+                const existingEdge = this.edges.find(edge => 
+                    edge.source === sourceId && edge.target === targetId
+                );
+
+                if (existingEdge) {
+                    this.showStatus('Edge already exists', 'error');
+                    return;
+                }
+
+                const edge = { 
+                    id: this.edgeIdCounter++,
+                    source: sourceId, 
+                    target: targetId,
+                    label: ''
+                };
+                this.edges.push(edge);
+                this.draw();
+                this.showStatus('Edge added successfully', 'success');
+            }
+
+            removeNode(nodeId) {
+                this.nodes = this.nodes.filter(node => node.id !== nodeId);
+                this.edges = this.edges.filter(edge => 
+                    edge.source !== nodeId && edge.target !== nodeId
+                );
+                this.draw();
+                this.showStatus('Node deleted', 'success');
+            }
+
+            removeEdge(edgeId) {
+                this.edges = this.edges.filter(edge => edge.id !== edgeId);
+                this.draw();
+                this.showStatus('Edge deleted', 'success');
+            }
+
+            openNodeEditModal(node) {
+                this.selectedNode = node;
+                const input = document.getElementById('editNodeLabel');
+                input.value = node.label;
+                const modal = document.getElementById('nodeModal');
+                modal.style.display = 'block';
+                
+                // Focus the input and select all text
+                input.focus();
+                input.select();
+                
+                // Add keyboard event listeners
+                input.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.saveNodeEdit();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        this.closeNodeModal();
+                    }
+                };
+            }
+
+            closeNodeModal() {
+                document.getElementById('nodeModal').style.display = 'none';
+                this.selectedNode = null;
+                
+                // Remove keyboard event listeners
+                const input = document.getElementById('editNodeLabel');
+                input.onkeydown = null;
+            }
+
+            saveNodeEdit() {
+                if (this.selectedNode) {
+                    const newLabel = document.getElementById('editNodeLabel').value.trim();
+                    // Allow empty labels - they will be replaced with default naming
+                    this.selectedNode.label = newLabel || `Node ${this.selectedNode.id}`;
+                    this.draw();
+                    this.showStatus('Node updated', 'success');
+                }
+                this.closeNodeModal();
+            }
+
+            openEdgeEditModal(edge) {
+                this.selectedEdge = edge;
+                const input = document.getElementById('editEdgeLabel');
+                input.value = edge.label || '';
+                document.getElementById('edgeModal').style.display = 'block';
+                
+                // Focus the input and select all text
+                input.focus();
+                input.select();
+                
+                // Add keyboard event listeners
+                input.onkeydown = (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        this.saveEdgeEdit();
+                    } else if (e.key === 'Escape') {
+                        e.preventDefault();
+                        this.closeEdgeModal();
+                    }
+                };
+            }
+
+            closeEdgeModal() {
+                document.getElementById('edgeModal').style.display = 'none';
+                this.selectedEdge = null;
+                
+                // Remove keyboard event listeners
+                const input = document.getElementById('editEdgeLabel');
+                input.onkeydown = null;
+            }
+
+            saveEdgeEdit() {
+                if (this.selectedEdge) {
+                    const newLabel = document.getElementById('editEdgeLabel').value.trim();
+                    this.selectedEdge.label = newLabel;
+                    this.draw();
+                    this.showStatus('Edge updated', 'success');
+                }
+                this.closeEdgeModal();
+            }
+
+            deleteEdge() {
+                if (this.selectedEdge) {
+                    this.removeEdge(this.selectedEdge.id);
+                }
+                this.closeEdgeModal();
+            }
+
+            showStatus(message, type = 'success') {
+                const status = document.getElementById('status');
+                status.textContent = message;
+                status.className = `status ${type} show`;
+                
+                setTimeout(() => {
+                    status.classList.remove('show');
+                }, 3000);
+            }
+
+            draw() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw edges
+                this.edges.forEach(edge => {
+                    const source = this.nodes.find(n => n.id === edge.source);
+                    const target = this.nodes.find(n => n.id === edge.target);
+                    
+                    if (source && target) {
+                        this.drawEdge(source, target, edge);
+                    }
+                });
+                
+                // Draw temporary edge while dragging
+                if (this.tempEdge) {
+                    this.drawTempEdge(this.tempEdge.source, this.tempEdge.target);
+                }
+                
+                // Draw nodes
+                this.nodes.forEach(node => {
+                    this.drawNode(node);
+                });
+            }
+
+            drawNode(node) {
+                // Check if this node is being edited
+                const isSelected = this.selectedNode && this.selectedNode.id === node.id;
+                
+                // Node circle
+                this.ctx.beginPath();
+                this.ctx.arc(node.x, node.y, 25, 0, 2 * Math.PI);
+                this.ctx.fillStyle = isSelected ? '#ffeb3b' : '#e3f2fd';
+                this.ctx.fill();
+                this.ctx.strokeStyle = isSelected ? '#f57f17' : '#1976d2';
+                this.ctx.lineWidth = isSelected ? 3 : 2;
+                this.ctx.stroke();
+                
+                // Node label
+                this.ctx.fillStyle = isSelected ? '#f57f17' : '#1976d2';
+                this.ctx.font = 'bold 14px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                this.ctx.fillText(node.label, node.x, node.y);
+            }
+
+            drawEdge(source, target, edge) {
+                // Calculate arrow
+                const dx = target.x - source.x;
+                const dy = target.y - source.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                
+                if (length === 0) return;
+                
+                const unitX = dx / length;
+                const unitY = dy / length;
+                
+                // Start and end points (avoiding node overlap)
+                const startX = source.x + unitX * 25;
+                const startY = source.y + unitY * 25;
+                const endX = target.x - unitX * 25;
+                const endY = target.y - unitY * 25;
+                
+                // Draw line
+                this.ctx.beginPath();
+                this.ctx.moveTo(startX, startY);
+                this.ctx.lineTo(endX, endY);
+                this.ctx.strokeStyle = '#666';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+                
+                // Draw arrow
+                const arrowLength = 15;
+                const arrowAngle = Math.PI / 6;
+                
+                const angle = Math.atan2(dy, dx);
+                const arrowX1 = endX - arrowLength * Math.cos(angle - arrowAngle);
+                const arrowY1 = endY - arrowLength * Math.sin(angle - arrowAngle);
+                const arrowX2 = endX - arrowLength * Math.cos(angle + arrowAngle);
+                const arrowY2 = endY - arrowLength * Math.sin(angle + arrowAngle);
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(endX, endY);
+                this.ctx.lineTo(arrowX1, arrowY1);
+                this.ctx.moveTo(endX, endY);
+                this.ctx.lineTo(arrowX2, arrowY2);
+                this.ctx.strokeStyle = '#666';
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
+                
+                // Draw edge label if exists
+                if (edge.label) {
+                    const midX = (startX + endX) / 2;
+                    const midY = (startY + endY) / 2;
+                    
+                    this.ctx.fillStyle = '#333';
+                    this.ctx.font = '12px Arial';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+                    this.ctx.fillText(edge.label, midX, midY);
+                }
+            }
+
+            drawTempEdge(source, target) {
+                // Draw temporary edge with dashed line
+                this.ctx.beginPath();
+                this.ctx.moveTo(source.x, source.y);
+                this.ctx.lineTo(target.x, target.y);
+                this.ctx.strokeStyle = '#ff6b6b';
+                this.ctx.lineWidth = 2;
+                this.ctx.setLineDash([5, 5]);
+                this.ctx.stroke();
+                this.ctx.setLineDash([]);
+            }
+
+            getGraphData() {
+                return {
+                    nodes: this.nodes,
+                    edges: this.edges
+                };
+            }
+
+            loadGraphData(data) {
+                this.nodes = data.nodes || [];
+                this.edges = data.edges || [];
+                this.nodeIdCounter = Math.max(...this.nodes.map(n => n.id), 0) + 1;
+                this.edgeIdCounter = Math.max(...this.edges.map(e => e.id || 0), 0) + 1;
+                this.draw();
+            }
+
+            clear() {
+                this.nodes = [];
+                this.edges = [];
+                this.nodeIdCounter = 1;
+                this.edgeIdCounter = 1;
+                this.draw();
+            }
+
+            handleMouseLeave(e) {
+                this.canvas.style.cursor = 'crosshair';
+            }
+        }
+
+        let graphEditor;
+
+        function showStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type} show`;
+            
+            setTimeout(() => {
+                status.classList.remove('show');
+            }, 3000);
+        }
+
+        function closeNodeModal() {
+            graphEditor.closeNodeModal();
+        }
+
+        function saveNodeEdit() {
+            graphEditor.saveNodeEdit();
+        }
+
+        function closeEdgeModal() {
+            graphEditor.closeEdgeModal();
+        }
+
+        function saveEdgeEdit() {
+            graphEditor.saveEdgeEdit();
+        }
+
+        function deleteEdge() {
+            graphEditor.deleteEdge();
+        }
+
+        function openSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'block';
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settingsModal').style.display = 'none';
+        }
+
+        function openGraphDetailsModal() {
+            const content = document.getElementById('graphDetailsContent');
+            const nodes = graphEditor.nodes;
+            const edges = graphEditor.edges;
+            
+            content.innerHTML = `
+                <div class="detail-section">
+                    <h4>Graph Statistics</h4>
+                    <div class="detail-list">
+                        <div class="detail-item">
+                            <span class="detail-label">Total Nodes:</span>
+                            <span class="detail-value">${nodes.length}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Total Edges:</span>
+                            <span class="detail-value">${edges.length}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Graph Density:</span>
+                            <span class="detail-value">${nodes.length > 1 ? (edges.length / (nodes.length * (nodes.length - 1))).toFixed(3) : '0'}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Nodes (${nodes.length})</h4>
+                    <div class="detail-list">
+                        ${nodes.length === 0 ? '<p style="color: #a0aec0; text-align: center; padding: 20px;">No nodes added yet</p>' : 
+                        nodes.map(node => `
+                            <div class="detail-item">
+                                <span class="detail-label">${node.label}</span>
+                                <span class="detail-value">ID: ${node.id} | (${Math.round(node.x)}, ${Math.round(node.y)})</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h4>Edges (${edges.length})</h4>
+                    <div class="detail-list">
+                        ${edges.length === 0 ? '<p style="color: #a0aec0; text-align: center; padding: 20px;">No edges added yet</p>' : 
+                        edges.map(edge => {
+                            const source = nodes.find(n => n.id === edge.source);
+                            const target = nodes.find(n => n.id === edge.target);
+                            return `
+                                <div class="detail-item">
+                                    <span class="detail-label">${source ? source.label : 'Unknown'} → ${target ? target.label : 'Unknown'}</span>
+                                    <span class="detail-value">${edge.label || 'No label'}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('graphDetailsModal').style.display = 'block';
+        }
+
+        function closeGraphDetailsModal() {
+            document.getElementById('graphDetailsModal').style.display = 'none';
+        }
+
+        async function saveGraph() {
+            const graphName = document.getElementById('graphName').value.trim();
+            if (!graphName) {
+                showStatus('Please enter a graph name', 'error');
+                return;
+            }
+            
+            const graphData = graphEditor.getGraphData();
+            
+            try {
+                const response = await fetch(`/api/graphs/${graphName}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(graphData)
+                });
+                
+                if (response.ok) {
+                    showStatus('Graph saved successfully', 'success');
+                    closeSettingsModal();
+                } else {
+                    showStatus('Failed to save graph', 'error');
+                }
+            } catch (error) {
+                showStatus('Error saving graph', 'error');
+            }
+        }
+
+        async function loadGraph() {
+            const graphName = document.getElementById('graphName').value.trim();
+            if (!graphName) {
+                showStatus('Please enter a graph name', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/graphs/${graphName}`);
+                
+                if (response.ok) {
+                    const graphData = await response.json();
+                    graphEditor.loadGraphData(graphData);
+                    showStatus('Graph loaded successfully', 'success');
+                    closeSettingsModal();
+                } else {
+                    showStatus('Graph not found', 'error');
+                }
+            } catch (error) {
+                showStatus('Error loading graph', 'error');
+            }
+        }
+
+        async function exportGraph(format) {
+            const graphName = document.getElementById('graphName').value.trim();
+            if (!graphName) {
+                showStatus('Please enter a graph name in settings', 'error');
+                return;
+            }
+            
+            if (graphEditor.nodes.length === 0) {
+                showStatus('No nodes to export', 'error');
+                return;
+            }
+            
+            // Save graph first
+            await saveGraph();
+            
+            try {
+                const response = await fetch(`/api/graphs/${graphName}/export/${format}`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${graphName}.${format === 'tikz' ? 'tex' : format}`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    showStatus(`${format.toUpperCase()} export successful`, 'success');
+                } else {
+                    showStatus(`Failed to export ${format.toUpperCase()}`, 'error');
+                }
+            } catch (error) {
+                showStatus(`Error exporting ${format.toUpperCase()}`, 'error');
+            }
+        }
+
+        function clearCanvas() {
+            if (confirm('Are you sure you want to clear the canvas? This action cannot be undone.')) {
+                graphEditor.clear();
+                showStatus('Canvas cleared', 'success');
+                closeSettingsModal();
+            }
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const nodeModal = document.getElementById('nodeModal');
+            const edgeModal = document.getElementById('edgeModal');
+            const settingsModal = document.getElementById('settingsModal');
+            const graphDetailsModal = document.getElementById('graphDetailsModal');
+            
+            if (event.target === nodeModal) {
+                closeNodeModal();
+            }
+            if (event.target === edgeModal) {
+                closeEdgeModal();
+            }
+            if (event.target === settingsModal) {
+                closeSettingsModal();
+            }
+            if (event.target === graphDetailsModal) {
+                closeGraphDetailsModal();
+            }
+        }
+
+        // Initialize the graph editor when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            graphEditor = new GraphEditor();
+        });
+    </script>
+</body>
+</html> 

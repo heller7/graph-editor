@@ -1,28 +1,67 @@
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fpython%2Fflask3&demo-title=Flask%203%20%2B%20Vercel&demo-description=Use%20Flask%203%20on%20Vercel%20with%20Serverless%20Functions%20using%20the%20Python%20Runtime.&demo-url=https%3A%2F%2Fflask3-python-template.vercel.app%2F&demo-image=https://assets.vercel.com/image/upload/v1669994156/random/flask.png)
+# Graph Editor
 
-# Flask + Vercel
+A simple web-based graph editor for creating and visualizing graphs with nodes and edges. Export your graphs as PNG, JPG images or TikZ code for LaTeX documents.
 
-This example shows how to use Flask 3 on Vercel with Serverless Functions using the [Python Runtime](https://vercel.com/docs/concepts/functions/serverless-functions/runtimes/python).
+## Features
+
+- **Interactive Graph Creation**: Click to add nodes, drag to move them, and connect nodes with edges
+- **Visual Editor**: Clean, modern interface with real-time graph visualization
+- **Export Options**: 
+  - PNG images for presentations and documents
+  - JPG images for web use
+  - TikZ code for LaTeX documents
+- **Graph Management**: Save and load graphs with custom names
+- **Responsive Design**: Works on desktop and mobile devices
 
 ## Demo
 
-https://flask-python-template.vercel.app/
+https://graph-editor.vercel.app/
 
 ## How it Works
 
-This example uses the Web Server Gateway Interface (WSGI) with Flask to enable handling requests on Vercel with Serverless Functions.
+This application uses Flask as the backend API with a modern HTML5 Canvas frontend for interactive graph editing. The backend handles graph storage and export functionality using matplotlib for image generation and custom TikZ code generation.
 
 ## Running Locally
 
+1. Install dependencies:
 ```bash
-npm i -g vercel
-vercel dev
+pip install -r requirements.txt
 ```
 
-Your Flask application is now available at `http://localhost:3000`.
+2. Run the Flask application:
+```bash
+cd api
+python index.py
+```
 
-## One-Click Deploy
+3. Open your browser and navigate to `http://localhost:5000`
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=vercel-examples):
+## Usage
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fexamples%2Ftree%2Fmain%2Fpython%2Fflask3&demo-title=Flask%203%20%2B%20Vercel&demo-description=Use%20Flask%203%20on%20Vercel%20with%20Serverless%20Functions%20using%20the%20Python%20Runtime.&demo-url=https%3A%2F%2Fflask3-python-template.vercel.app%2F&demo-image=https://assets.vercel.com/image/upload/v1669994156/random/flask.png)
+1. **Adding Nodes**: Enter a label and click "Add Node", or click directly on the canvas
+2. **Moving Nodes**: Click and drag nodes to reposition them
+3. **Adding Edges**: Select source and target nodes from the dropdown menus, then click "Add Edge"
+4. **Saving Graphs**: Enter a name and click "Save Graph" to store your work
+5. **Exporting**: Choose from PNG, JPG, or TikZ export options
+
+## API Endpoints
+
+- `GET /` - Main application interface
+- `GET /api/graphs` - List all saved graphs
+- `GET /api/graphs/<id>` - Get a specific graph
+- `POST /api/graphs/<id>` - Save a graph
+- `POST /api/graphs/<id>/export/png` - Export as PNG
+- `POST /api/graphs/<id>/export/jpg` - Export as JPG
+- `POST /api/graphs/<id>/export/tikz` - Export as TikZ code
+
+## Deployment
+
+This application is configured for deployment on Vercel with serverless functions.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyourusername%2Fgraph-editor)
+
+## Technologies Used
+
+- **Backend**: Flask, matplotlib, networkx
+- **Frontend**: HTML5 Canvas, vanilla JavaScript, CSS3
+- **Deployment**: Vercel serverless functions
