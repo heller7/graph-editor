@@ -24,7 +24,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
             display: flex;
             flex-direction: column;
@@ -55,7 +55,7 @@
             padding: 24px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 900px;
+            max-width: 1200px;
         }
 
         .canvas-header {
@@ -149,7 +149,7 @@
             padding: 24px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 900px;
+            max-width: 1200px;
         }
 
         .instructions h3 {
@@ -388,6 +388,108 @@
             gap: 16px;
         }
 
+        /* Interactive Controls Panel Styles */
+        .controls-panel {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 1200px;
+            margin-bottom: 24px;
+            overflow: hidden;
+        }
+
+        .controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            cursor: pointer;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            transition: background-color 0.2s ease;
+        }
+
+        .controls-header:hover {
+            background: #edf2f7;
+        }
+
+        .controls-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a202c;
+        }
+
+        .controls-title i {
+            color: #4299e1;
+            font-size: 14px;
+        }
+
+        .controls-toggle {
+            color: #a0aec0;
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+
+        .controls-panel.collapsed .controls-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .controls-content {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .controls-panel.collapsed .controls-content {
+            display: none;
+        }
+
+        .controls-section h4 {
+            color: #2d3748;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            margin-bottom: 4px;
+        }
+
+        .control-key {
+            background: #f1f5f9;
+            color: #475569;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            min-width: fit-content;
+            border: 1px solid #e2e8f0;
+        }
+
+        .control-arrow {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .control-action {
+            color: #475569;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 16px;
@@ -413,6 +515,11 @@
 
             .settings-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .controls-content {
+                grid-template-columns: 1fr;
+                gap: 16px;
             }
         }
     </style>
@@ -451,31 +558,70 @@
             </div>
 
             <div class="canvas-container">
-                <canvas id="canvas" width="800" height="600"></canvas>
+                <canvas id="canvas" width="1000" height="700"></canvas>
             </div>
         </div>
 
-        <div class="instructions">
-            <h3>
-                <i class="fas fa-info-circle"></i>
-                How to Use
-            </h3>
-            <div class="instructions-grid">
-                <div class="instruction-item">
-                    <h4>Add Nodes</h4>
-                    <p>Click anywhere on the empty canvas to add a new node at that location.</p>
+        <!-- Interactive Graph Controls Panel -->
+        <div class="controls-panel">
+            <div class="controls-header" onclick="toggleControlsPanel()">
+                <div class="controls-title">
+                    <i class="fas fa-magic"></i>
+                    Interactive Graph Controls
                 </div>
-                <div class="instruction-item">
-                    <h4>Edit Nodes</h4>
-                    <p>Click on any existing node to open the edit dialog and change its label.</p>
+                <i class="fas fa-chevron-down controls-toggle" id="controlsToggle"></i>
+            </div>
+            <div class="controls-content" id="controlsContent">
+                <div class="controls-section">
+                    <h4>Basic Actions</h4>
+                    <div class="control-item">
+                        <span class="control-key">Double-click</span>
+                        <span class="control-arrow">→</span>
+                        <span class="control-action">Add node</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="control-key">Drag</span>
+                        <span class="control-arrow">→</span>
+                        <span class="control-action">Move nodes</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="control-key">Shift+click</span>
+                        <span class="control-arrow">→</span>
+                        <span class="control-action">Connect nodes</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="control-key">Right-click</span>
+                        <span class="control-arrow">→</span>
+                        <span class="control-action">Context menu</span>
+                    </div>
                 </div>
-                <div class="instruction-item">
-                    <h4>Create Edges</h4>
-                    <p>Click and drag from one node to another to create a directed edge between them.</p>
-                </div>
-                <div class="instruction-item">
-                    <h4>Delete Elements</h4>
-                    <p>Right-click on a node to delete it, or use the Details panel to manage all elements.</p>
+                <div class="controls-section">
+                    <h4>Advanced</h4>
+                    <div class="control-item">
+                        <span class="control-key">Ctrl+click</span>
+                        <span class="control-arrow">→</span>
+                        <span class="control-action">Multi-select</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="control-key">Delete</span>
+                        <span class="control-arrow">→</span>
+                        <span class="control-action">Remove selected</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="control-key">Double-click edge</span>
+                        <span class="control-arrow">→</span>
+                        <span class="control-action">Edit weight</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="control-key">Ctrl+drag</span>
+                        <span class="control-arrow">→</span>
+                        <span class="control-action">Pan view</span>
+                    </div>
+                    <div class="control-item">
+                        <span class="control-key">Escape</span>
+                        <span class="control-arrow">→</span>
+                        <span class="control-action">Cancel connection</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -576,10 +722,19 @@
                 this.isDragging = false;
                 this.dragStartNode = null;
                 this.dragStartPos = { x: 0, y: 0 };
-                this.tempEdge = null;
-                this.selectedNode = null;
+                this.connectionSourceNode = null;
+                this.editingNode = null;
                 this.selectedEdge = null;
                 this.dragTimeout = null;
+                this.isConnectionMode = false;
+                this.nodeRadius = 25;
+                
+                // Advanced features
+                this.selectedNodes = new Set();
+                this.isPanning = false;
+                this.panStart = { x: 0, y: 0 };
+                this.panOffset = { x: 0, y: 0 };
+                this.isMultiSelect = false;
                 
                 this.setupEventListeners();
                 this.draw();
@@ -591,9 +746,12 @@
                 this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
                 this.canvas.addEventListener('contextmenu', (e) => this.handleRightClick(e));
                 this.canvas.addEventListener('mouseleave', (e) => this.handleMouseLeave(e));
+                this.canvas.addEventListener('dblclick', (e) => this.handleDoubleClick(e));
                 
-                // Prevent context menu on canvas
-                this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+                // Keyboard events
+                document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+                document.addEventListener('keyup', (e) => this.handleKeyUp(e));
+                
             }
 
             getMousePos(e) {
@@ -608,14 +766,47 @@
                 const pos = this.getMousePos(e);
                 const node = this.getNodeAt(pos.x, pos.y);
                 
+                // Check for Ctrl+drag (panning)
+                if (e.ctrlKey && !node) {
+                    this.isPanning = true;
+                    this.panStart = pos;
+                    this.canvas.style.cursor = 'grabbing';
+                    return;
+                }
+                
+                // Check for Ctrl+click (multi-select)
+                if (e.ctrlKey && node) {
+                    this.isMultiSelect = true;
+                    if (this.selectedNodes.has(node.id)) {
+                        this.selectedNodes.delete(node.id);
+                    } else {
+                        this.selectedNodes.add(node.id);
+                    }
+                    this.draw();
+                    return;
+                }
+                
+                // Check for Shift+click (connect nodes)
+                if (e.shiftKey && node) {
+                    this.isConnectionMode = true;
+                    if (this.connectionSourceNode && this.connectionSourceNode.id !== node.id) {
+                        // Connect the selected node to this node
+                        this.addEdge(this.connectionSourceNode.id, node.id);
+                        this.connectionSourceNode = null;
+                        this.showStatus('Nodes connected successfully', 'success');
+                    } else {
+                        // Select this node for connection
+                        this.connectionSourceNode = node;
+                        this.showStatus(`Selected node "${node.label}" for connection. Shift+click another node to connect.`, 'success');
+                    }
+                    this.draw();
+                    return;
+                }
+                
                 if (node) {
                     this.dragStartNode = node;
                     this.dragStartPos = pos;
                     this.isDragging = false; // Start as false, will be set to true if we actually drag
-                    this.tempEdge = {
-                        source: node,
-                        target: pos
-                    };
                     
                     // Set a small timeout to distinguish between click and drag
                     this.dragTimeout = setTimeout(() => {
@@ -628,6 +819,15 @@
 
             handleMouseMove(e) {
                 const pos = this.getMousePos(e);
+                
+                // Handle panning
+                if (this.isPanning) {
+                    this.panOffset.x += pos.x - this.panStart.x;
+                    this.panOffset.y += pos.y - this.panStart.y;
+                    this.panStart = pos;
+                    this.draw();
+                    return;
+                }
                 
                 if (this.dragStartNode && !this.isDragging) {
                     // Check if we've moved enough to consider it a drag
@@ -647,7 +847,9 @@
                 }
                 
                 if (this.isDragging && this.dragStartNode) {
-                    this.tempEdge.target = pos;
+                    // Move the node to the new position
+                    this.dragStartNode.x = pos.x - this.panOffset.x;
+                    this.dragStartNode.y = pos.y - this.panOffset.y;
                     this.draw();
                 } else {
                     // Check for node or edge hover
@@ -656,6 +858,8 @@
                     
                     if (node || edge) {
                         this.canvas.style.cursor = 'pointer';
+                    } else if (e.ctrlKey) {
+                        this.canvas.style.cursor = 'grab';
                     } else {
                         this.canvas.style.cursor = 'crosshair';
                     }
@@ -665,6 +869,13 @@
             handleMouseUp(e) {
                 const pos = this.getMousePos(e);
                 
+                // Handle panning end
+                if (this.isPanning) {
+                    this.isPanning = false;
+                    this.canvas.style.cursor = 'crosshair';
+                    return;
+                }
+                
                 // Clear the drag timeout if it exists
                 if (this.dragTimeout) {
                     clearTimeout(this.dragTimeout);
@@ -672,22 +883,14 @@
                 }
                 
                 if (this.isDragging && this.dragStartNode) {
-                    const targetNode = this.getNodeAt(pos.x, pos.y);
-                    
-                    if (targetNode && targetNode !== this.dragStartNode) {
-                        // Create edge
-                        this.addEdge(this.dragStartNode.id, targetNode.id);
-                    }
-                    
+                    // Node dragging is handled in mouse move, just clean up here
                     this.isDragging = false;
                     this.dragStartNode = null;
-                    this.tempEdge = null;
                     this.draw();
-                } else if (this.dragStartNode && !this.isDragging) {
-                    // This was a click, not a drag
+                } else if (this.dragStartNode && !this.isDragging && !this.isMultiSelect && !this.isConnectionMode) {
+                    // This was a click, not a drag - open node edit modal (only if not in connection mode)
                     const node = this.dragStartNode;
                     this.dragStartNode = null;
-                    this.tempEdge = null;
                     
                     this.openNodeEditModal(node);
                 } else if (!this.dragStartNode) {
@@ -695,38 +898,111 @@
                     const node = this.getNodeAt(pos.x, pos.y);
                     
                     if (node) {
-                        this.openNodeEditModal(node);
+                        if (!this.isConnectionMode) {
+                            this.openNodeEditModal(node);
+                        }
+                        // If in connection mode, clicking on a node will be handled by Shift+click logic
                     } else {
                         // Check if clicking on an edge
                         const edge = this.getEdgeAt(pos.x, pos.y);
                         
                         if (edge) {
-                            this.openEdgeEditModal(edge);
-                        } else {
-                            // Add new node
-                            this.addNode('', pos.x, pos.y);
+                            if (!this.isConnectionMode) {
+                                this.openEdgeEditModal(edge);
+                            }
+                        } else if (this.isConnectionMode) {
+                            // Click on empty space while in connection mode - cancel connection
+                            this.connectionSourceNode = null;
+                            this.showStatus('Connection cancelled', 'success');
                         }
+                        // Don't add nodes on single click - only on double-click
                     }
                 }
+                
+                this.isMultiSelect = false;
+                this.isConnectionMode = false;
             }
 
             handleRightClick(e) {
                 e.preventDefault();
                 const pos = this.getMousePos(e);
                 const node = this.getNodeAt(pos.x, pos.y);
+                const edge = this.getEdgeAt(pos.x, pos.y);
                 
                 if (node) {
-                    if (confirm(`Delete node "${node.label}"?`)) {
+                    // Show context menu for node
+                    const action = confirm(`Right-click menu:\n\nClick OK to delete node "${node.label}"\nClick Cancel to edit node`);
+                    if (action) {
                         this.removeNode(node.id);
+                    } else {
+                        this.openNodeEditModal(node);
+                    }
+                } else if (edge) {
+                    // Show context menu for edge
+                    const action = confirm(`Right-click menu:\n\nClick OK to delete edge\nClick Cancel to edit edge`);
+                    if (action) {
+                        this.removeEdge(edge.id);
+                    } else {
+                        this.openEdgeEditModal(edge);
                     }
                 }
             }
 
+            handleDoubleClick(e) {
+                const pos = this.getMousePos(e);
+                const node = this.getNodeAt(pos.x, pos.y);
+                const edge = this.getEdgeAt(pos.x, pos.y);
+                
+                if (node) {
+                    // Double-click on node - open edit modal
+                    this.openNodeEditModal(node);
+                } else if (edge) {
+                    // Double-click on edge - edit edge weight/label
+                    this.openEdgeEditModal(edge);
+                } else {
+                    // Double-click on empty space - add new node at exact position
+                    this.addNode('', pos.x, pos.y);
+                }
+            }
+
+            handleKeyDown(e) {
+                // Ignore key events when an input field is focused
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+                    return;
+                }
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    // Delete selected nodes
+                    if (this.selectedNodes.size > 0) {
+                        this.selectedNodes.forEach(nodeId => {
+                            this.removeNode(nodeId);
+                        });
+                        this.selectedNodes.clear();
+                        this.draw();
+                    }
+                } else if (e.key === 'Escape') {
+                    // Cancel connection mode
+                    if (this.isConnectionMode || this.connectionSourceNode) {
+                        this.connectionSourceNode = null;
+                        this.isConnectionMode = false;
+                        this.showStatus('Connection cancelled', 'success');
+                        this.draw();
+                    }
+                }
+            }
+
+            handleKeyUp(e) {
+                // Handle key releases if needed
+            }
+
             getNodeAt(x, y) {
+                // Account for pan offset
+                const adjustedX = x - this.panOffset.x;
+                const adjustedY = y - this.panOffset.y;
+                
                 for (let i = this.nodes.length - 1; i >= 0; i--) {
                     const node = this.nodes[i];
-                    const distance = Math.sqrt((x - node.x) ** 2 + (y - node.y) ** 2);
-                    if (distance <= 25) {
+                    const distance = Math.sqrt((adjustedX - node.x) ** 2 + (adjustedY - node.y) ** 2);
+                    if (distance <= this.nodeRadius) {
                         return node;
                     }
                 }
@@ -734,13 +1010,17 @@
             }
 
             getEdgeAt(x, y) {
+                // Account for pan offset
+                const adjustedX = x - this.panOffset.x;
+                const adjustedY = y - this.panOffset.y;
+                
                 for (let i = this.edges.length - 1; i >= 0; i--) {
                     const edge = this.edges[i];
                     const source = this.nodes.find(n => n.id === edge.source);
                     const target = this.nodes.find(n => n.id === edge.target);
                     
                     if (source && target) {
-                        if (this.isPointNearLine(x, y, source.x, source.y, target.x, target.y)) {
+                        if (this.isPointNearLine(adjustedX, adjustedY, source.x, source.y, target.x, target.y)) {
                             return edge;
                         }
                     }
@@ -785,8 +1065,8 @@
                 const node = {
                     id: nodeId,
                     label: label || `Node ${nodeId}`,
-                    x: x || Math.random() * 600 + 100,
-                    y: y || Math.random() * 400 + 100
+                    x: (x || Math.random() * 600 + 100) - this.panOffset.x,
+                    y: (y || Math.random() * 400 + 100) - this.panOffset.y
                 };
                 this.nodes.push(node);
                 this.draw();
@@ -835,7 +1115,7 @@
             }
 
             openNodeEditModal(node) {
-                this.selectedNode = node;
+                this.editingNode = node;
                 const input = document.getElementById('editNodeLabel');
                 input.value = node.label;
                 const modal = document.getElementById('nodeModal');
@@ -859,7 +1139,7 @@
 
             closeNodeModal() {
                 document.getElementById('nodeModal').style.display = 'none';
-                this.selectedNode = null;
+                this.editingNode = null;
                 
                 // Remove keyboard event listeners
                 const input = document.getElementById('editNodeLabel');
@@ -867,10 +1147,10 @@
             }
 
             saveNodeEdit() {
-                if (this.selectedNode) {
+                if (this.editingNode) {
                     const newLabel = document.getElementById('editNodeLabel').value.trim();
                     // Allow empty labels - they will be replaced with default naming
-                    this.selectedNode.label = newLabel || `Node ${this.selectedNode.id}`;
+                    this.editingNode.label = newLabel || `Node ${this.editingNode.id}`;
                     this.draw();
                     this.showStatus('Node updated', 'success');
                 }
@@ -938,6 +1218,10 @@
             draw() {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 
+                // Apply pan offset
+                this.ctx.save();
+                this.ctx.translate(this.panOffset.x, this.panOffset.y);
+                
                 // Draw edges
                 this.edges.forEach(edge => {
                     const source = this.nodes.find(n => n.id === edge.source);
@@ -948,32 +1232,43 @@
                     }
                 });
                 
-                // Draw temporary edge while dragging
-                if (this.tempEdge) {
-                    this.drawTempEdge(this.tempEdge.source, this.tempEdge.target);
-                }
                 
                 // Draw nodes
                 this.nodes.forEach(node => {
                     this.drawNode(node);
                 });
+                
+                this.ctx.restore();
             }
 
             drawNode(node) {
-                // Check if this node is being edited
-                const isSelected = this.selectedNode && this.selectedNode.id === node.id;
-                
+                // Check if this node is being edited or multi-selected
+                const isSelected = this.connectionSourceNode && this.connectionSourceNode.id === node.id;
+                const isMultiSelected = this.selectedNodes.has(node.id);
+
                 // Node circle
                 this.ctx.beginPath();
-                this.ctx.arc(node.x, node.y, 25, 0, 2 * Math.PI);
-                this.ctx.fillStyle = isSelected ? '#ffeb3b' : '#e3f2fd';
+                this.ctx.arc(node.x, node.y, this.nodeRadius, 0, 2 * Math.PI);
+                
+                if (isSelected) {
+                    this.ctx.fillStyle = '#ffeb3b';
+                    this.ctx.strokeStyle = '#f57f17';
+                    this.ctx.lineWidth = 3;
+                } else if (isMultiSelected) {
+                    this.ctx.fillStyle = '#c8e6c9';
+                    this.ctx.strokeStyle = '#4caf50';
+                    this.ctx.lineWidth = 3;
+                } else {
+                    this.ctx.fillStyle = '#e3f2fd';
+                    this.ctx.strokeStyle = '#1976d2';
+                    this.ctx.lineWidth = 2;
+                }
+                
                 this.ctx.fill();
-                this.ctx.strokeStyle = isSelected ? '#f57f17' : '#1976d2';
-                this.ctx.lineWidth = isSelected ? 3 : 2;
                 this.ctx.stroke();
                 
                 // Node label
-                this.ctx.fillStyle = isSelected ? '#f57f17' : '#1976d2';
+                this.ctx.fillStyle = isSelected ? '#f57f17' : (isMultiSelected ? '#4caf50' : '#1976d2');
                 this.ctx.font = 'bold 14px Arial';
                 this.ctx.textAlign = 'center';
                 this.ctx.textBaseline = 'middle';
@@ -992,10 +1287,10 @@
                 const unitY = dy / length;
                 
                 // Start and end points (avoiding node overlap)
-                const startX = source.x + unitX * 25;
-                const startY = source.y + unitY * 25;
-                const endX = target.x - unitX * 25;
-                const endY = target.y - unitY * 25;
+                const startX = source.x + unitX * this.nodeRadius;
+                const startY = source.y + unitY * this.nodeRadius;
+                const endX = target.x - unitX * this.nodeRadius;
+                const endY = target.y - unitY * this.nodeRadius;
                 
                 // Draw line
                 this.ctx.beginPath();
@@ -1037,22 +1332,12 @@
                 }
             }
 
-            drawTempEdge(source, target) {
-                // Draw temporary edge with dashed line
-                this.ctx.beginPath();
-                this.ctx.moveTo(source.x, source.y);
-                this.ctx.lineTo(target.x, target.y);
-                this.ctx.strokeStyle = '#ff6b6b';
-                this.ctx.lineWidth = 2;
-                this.ctx.setLineDash([5, 5]);
-                this.ctx.stroke();
-                this.ctx.setLineDash([]);
-            }
 
             getGraphData() {
                 return {
                     nodes: this.nodes,
-                    edges: this.edges
+                    edges: this.edges,
+                    nodeRadius: this.nodeRadius
                 };
             }
 
@@ -1061,6 +1346,12 @@
                 this.edges = data.edges || [];
                 this.nodeIdCounter = Math.max(...this.nodes.map(n => n.id), 0) + 1;
                 this.edgeIdCounter = Math.max(...this.edges.map(e => e.id || 0), 0) + 1;
+                if (data.nodeRadius) {
+                    this.nodeRadius = data.nodeRadius;
+                    const sizeMap = {18: 'small', 25: 'medium', 35: 'large'};
+                    const sizeSelect = document.getElementById('nodeSize');
+                    if (sizeMap[this.nodeRadius]) sizeSelect.value = sizeMap[this.nodeRadius];
+                }
                 this.draw();
             }
 
@@ -1073,11 +1364,29 @@
             }
 
             handleMouseLeave(e) {
+                if (this.isDragging || this.dragStartNode) {
+                    this.isDragging = false;
+                    this.dragStartNode = null;
+                    if (this.dragTimeout) {
+                        clearTimeout(this.dragTimeout);
+                        this.dragTimeout = null;
+                    }
+                    this.draw();
+                }
+                if (this.isPanning) {
+                    this.isPanning = false;
+                }
                 this.canvas.style.cursor = 'crosshair';
             }
         }
 
         let graphEditor;
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
 
         function showStatus(message, type = 'success') {
             const status = document.getElementById('status');
@@ -1147,7 +1456,7 @@
                         ${nodes.length === 0 ? '<p style="color: #a0aec0; text-align: center; padding: 20px;">No nodes added yet</p>' : 
                         nodes.map(node => `
                             <div class="detail-item">
-                                <span class="detail-label">${node.label}</span>
+                                <span class="detail-label">${escapeHtml(node.label)}</span>
                                 <span class="detail-value">ID: ${node.id} | (${Math.round(node.x)}, ${Math.round(node.y)})</span>
                             </div>
                         `).join('')}
@@ -1163,8 +1472,8 @@
                             const target = nodes.find(n => n.id === edge.target);
                             return `
                                 <div class="detail-item">
-                                    <span class="detail-label">${source ? source.label : 'Unknown'} → ${target ? target.label : 'Unknown'}</span>
-                                    <span class="detail-value">${edge.label || 'No label'}</span>
+                                    <span class="detail-label">${source ? escapeHtml(source.label) : 'Unknown'} → ${target ? escapeHtml(target.label) : 'Unknown'}</span>
+                                    <span class="detail-value">${edge.label ? escapeHtml(edge.label) : 'No label'}</span>
                                 </div>
                             `;
                         }).join('')}
@@ -1183,11 +1492,11 @@
             const graphName = document.getElementById('graphName').value.trim();
             if (!graphName) {
                 showStatus('Please enter a graph name', 'error');
-                return;
+                return false;
             }
-            
+
             const graphData = graphEditor.getGraphData();
-            
+
             try {
                 const response = await fetch(`/api/graphs/${graphName}`, {
                     method: 'POST',
@@ -1196,15 +1505,18 @@
                     },
                     body: JSON.stringify(graphData)
                 });
-                
+
                 if (response.ok) {
                     showStatus('Graph saved successfully', 'success');
                     closeSettingsModal();
+                    return true;
                 } else {
                     showStatus('Failed to save graph', 'error');
+                    return false;
                 }
             } catch (error) {
                 showStatus('Error saving graph', 'error');
+                return false;
             }
         }
 
@@ -1244,7 +1556,8 @@
             }
             
             // Save graph first
-            await saveGraph();
+            const saved = await saveGraph();
+            if (!saved) return;
             
             try {
                 const response = await fetch(`/api/graphs/${graphName}/export/${format}`, {
@@ -1299,9 +1612,24 @@
             }
         }
 
+        // Controls panel functionality
+        function toggleControlsPanel() {
+            const panel = document.querySelector('.controls-panel');
+            const toggle = document.getElementById('controlsToggle');
+            
+            panel.classList.toggle('collapsed');
+            toggle.style.transform = panel.classList.contains('collapsed') ? 'rotate(-90deg)' : 'rotate(0deg)';
+        }
+
         // Initialize the graph editor when the page loads
         document.addEventListener('DOMContentLoaded', () => {
             graphEditor = new GraphEditor();
+
+            document.getElementById('nodeSize').addEventListener('change', (e) => {
+                const sizeMap = { small: 18, medium: 25, large: 35 };
+                graphEditor.nodeRadius = sizeMap[e.target.value] || 25;
+                graphEditor.draw();
+            });
         });
     </script>
 </body>
