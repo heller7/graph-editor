@@ -287,6 +287,12 @@
             background: white;
         }
 
+        .form-group input[type="color"] {
+            height: 40px;
+            padding: 4px;
+            cursor: pointer;
+        }
+
         .form-group input:focus, .form-group select:focus {
             outline: none;
             border-color: #4299e1;
@@ -638,6 +644,10 @@
                 <label for="editNodeLabel">Node Label:</label>
                 <input type="text" id="editNodeLabel" placeholder="Enter node label">
             </div>
+            <div class="form-group">
+                <label for="editNodeColor">Node Color:</label>
+                <input type="color" id="editNodeColor" value="#e3f2fd">
+            </div>
             <div class="modal-actions">
                 <button class="btn" onclick="saveNodeEdit()">Save</button>
                 <button class="btn btn-secondary" onclick="closeNodeModal()">Cancel</button>
@@ -735,6 +745,10 @@
                 this.panStart = { x: 0, y: 0 };
                 this.panOffset = { x: 0, y: 0 };
                 this.isMultiSelect = false;
+
+                // Alignment guides
+                this.alignmentGuides = { horizontal: null, vertical: null };
+                this.alignmentThreshold = 5;
                 
                 this.setupEventListeners();
                 this.draw();
@@ -850,6 +864,7 @@
                     // Move the node to the new position
                     this.dragStartNode.x = pos.x - this.panOffset.x;
                     this.dragStartNode.y = pos.y - this.panOffset.y;
+                    this.alignmentGuides = this.computeAlignmentGuides(this.dragStartNode);
                     this.draw();
                 } else {
                     // Check for node or edge hover
@@ -886,6 +901,7 @@
                     // Node dragging is handled in mouse move, just clean up here
                     this.isDragging = false;
                     this.dragStartNode = null;
+                    this.alignmentGuides = { horizontal: null, vertical: null };
                     this.draw();
                 } else if (this.dragStartNode && !this.isDragging && !this.isMultiSelect && !this.isConnectionMode) {
                     // This was a click, not a drag - open node edit modal (only if not in connection mode)
@@ -1066,7 +1082,8 @@
                     id: nodeId,
                     label: label || `Node ${nodeId}`,
                     x: (x || Math.random() * 600 + 100) - this.panOffset.x,
-                    y: (y || Math.random() * 400 + 100) - this.panOffset.y
+                    y: (y || Math.random() * 400 + 100) - this.panOffset.y,
+                    color: '#e3f2fd'
                 };
                 this.nodes.push(node);
                 this.draw();
@@ -1118,6 +1135,7 @@
                 this.editingNode = node;
                 const input = document.getElementById('editNodeLabel');
                 input.value = node.label;
+                document.getElementById('editNodeColor').value = node.color || '#e3f2fd';
                 const modal = document.getElementById('nodeModal');
                 modal.style.display = 'block';
                 
@@ -1151,6 +1169,7 @@
                     const newLabel = document.getElementById('editNodeLabel').value.trim();
                     // Allow empty labels - they will be replaced with default naming
                     this.editingNode.label = newLabel || `Node ${this.editingNode.id}`;
+                    this.editingNode.color = document.getElementById('editNodeColor').value;
                     this.draw();
                     this.showStatus('Node updated', 'success');
                 }
@@ -1237,7 +1256,10 @@
                 this.nodes.forEach(node => {
                     this.drawNode(node);
                 });
-                
+
+                // Draw alignment guides
+                this.drawAlignmentGuides();
+
                 this.ctx.restore();
             }
 
@@ -1259,7 +1281,7 @@
                     this.ctx.strokeStyle = '#4caf50';
                     this.ctx.lineWidth = 3;
                 } else {
-                    this.ctx.fillStyle = '#e3f2fd';
+                    this.ctx.fillStyle = node.color || '#e3f2fd';
                     this.ctx.strokeStyle = '#1976d2';
                     this.ctx.lineWidth = 2;
                 }
@@ -1344,6 +1366,7 @@
             loadGraphData(data) {
                 this.nodes = data.nodes || [];
                 this.edges = data.edges || [];
+                this.nodes.forEach(n => { if (!n.color) n.color = '#e3f2fd'; });
                 this.nodeIdCounter = Math.max(...this.nodes.map(n => n.id), 0) + 1;
                 this.edgeIdCounter = Math.max(...this.edges.map(e => e.id || 0), 0) + 1;
                 if (data.nodeRadius) {
@@ -1367,6 +1390,7 @@
                 if (this.isDragging || this.dragStartNode) {
                     this.isDragging = false;
                     this.dragStartNode = null;
+                    this.alignmentGuides = { horizontal: null, vertical: null };
                     if (this.dragTimeout) {
                         clearTimeout(this.dragTimeout);
                         this.dragTimeout = null;
@@ -1377,6 +1401,52 @@
                     this.isPanning = false;
                 }
                 this.canvas.style.cursor = 'crosshair';
+            }
+
+            computeAlignmentGuides(draggedNode) {
+                const guides = { horizontal: null, vertical: null };
+                for (const node of this.nodes) {
+                    if (node.id === draggedNode.id) continue;
+                    if (guides.vertical === null && Math.abs(node.x - draggedNode.x) <= this.alignmentThreshold) {
+                        guides.vertical = node.x;
+                        draggedNode.x = node.x;
+                    }
+                    if (guides.horizontal === null && Math.abs(node.y - draggedNode.y) <= this.alignmentThreshold) {
+                        guides.horizontal = node.y;
+                        draggedNode.y = node.y;
+                    }
+                }
+                return guides;
+            }
+
+            drawAlignmentGuides() {
+                const ctx = this.ctx;
+                ctx.save();
+                ctx.setLineDash([6, 4]);
+                ctx.strokeStyle = '#ff4081';
+                ctx.lineWidth = 1;
+
+                // Compute visible bounds accounting for pan offset
+                const left = -this.panOffset.x;
+                const right = this.canvas.width - this.panOffset.x;
+                const top = -this.panOffset.y;
+                const bottom = this.canvas.height - this.panOffset.y;
+
+                if (this.alignmentGuides.vertical !== null) {
+                    const x = this.alignmentGuides.vertical;
+                    ctx.beginPath();
+                    ctx.moveTo(x, top);
+                    ctx.lineTo(x, bottom);
+                    ctx.stroke();
+                }
+                if (this.alignmentGuides.horizontal !== null) {
+                    const y = this.alignmentGuides.horizontal;
+                    ctx.beginPath();
+                    ctx.moveTo(left, y);
+                    ctx.lineTo(right, y);
+                    ctx.stroke();
+                }
+                ctx.restore();
             }
         }
 
@@ -1456,7 +1526,7 @@
                         ${nodes.length === 0 ? '<p style="color: #a0aec0; text-align: center; padding: 20px;">No nodes added yet</p>' : 
                         nodes.map(node => `
                             <div class="detail-item">
-                                <span class="detail-label">${escapeHtml(node.label)}</span>
+                                <span class="detail-label"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${node.color || '#e3f2fd'};border:1px solid #ccc;vertical-align:middle;margin-right:6px;"></span>${escapeHtml(node.label)}</span>
                                 <span class="detail-value">ID: ${node.id} | (${Math.round(node.x)}, ${Math.round(node.y)})</span>
                             </div>
                         `).join('')}

@@ -90,7 +90,8 @@ def render_graph_to_figure(graph_data):
         label = node.get('label', str(node['id']))
 
         # Draw circle
-        circle = patches.Circle((x, y), node_radius, facecolor='lightblue', edgecolor='black', linewidth=2)
+        node_color = node.get('color', '#e3f2fd')
+        circle = patches.Circle((x, y), node_radius, facecolor=node_color, edgecolor='black', linewidth=2)
         ax.add_patch(circle)
 
         # Add label
@@ -135,11 +136,16 @@ def export_tikz(graph_id):
 
     tikz_code = "\\begin{tikzpicture}\n"
 
+    # Define per-node colors
+    for node in graph_data.get('nodes', []):
+        hex_color = node.get('color', '#e3f2fd').lstrip('#')
+        tikz_code += f"    \\definecolor{{nodecolor{node['id']}}}{{HTML}}{{{hex_color.upper()}}}\n"
+
     # Add nodes
     for node in graph_data.get('nodes', []):
         x, y = node['x'] / 100, (700 - node['y']) / 100  # Convert to TikZ coordinates
         label = node.get('label', str(node['id']))
-        tikz_code += f"    \\node[circle, draw, fill=blue!20, minimum size=1cm] ({node['id']}) at ({x:.2f}, {y:.2f}) {{{label}}};\n"
+        tikz_code += f"    \\node[circle, draw, fill=nodecolor{node['id']}, minimum size=1cm] ({node['id']}) at ({x:.2f}, {y:.2f}) {{{label}}};\n"
 
     # Add edges
     for edge in graph_data.get('edges', []):
